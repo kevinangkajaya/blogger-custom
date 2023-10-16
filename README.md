@@ -1,6 +1,11 @@
 This application can be used to upload images to google drive. 
 Unfortunately I was going to use it for uploading to blogger, but either it is not possible or I still have not find the way.
 
+References:
+- [Google Picker API Guide](https://developers.google.com/drive/picker/guides/overview)
+- [Picker API ReactJS](https://github.com/Jose-cd/React-google-drive-picker)
+- [Blogger API](https://developers.google.com/blogger/docs/3.0/using)
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
