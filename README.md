@@ -1,3 +1,6 @@
+This application can be used to upload images to google drive. 
+Unfortunately I was going to use it for uploading to blogger, but either it is not possible or I still have not find the way.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

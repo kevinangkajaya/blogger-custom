@@ -16,7 +16,7 @@ const GooglePicker = () => {
             supportDrives: true,
             multiselect: true,
             // customViews: customViewsArray, // custom view
-            customScopes: 'https://www.googleapis.com/auth/drive.file',
+            customScopes: ['https://www.googleapis.com/auth/drive.file'],
             callbackFunction: (data) => {
                 if (data.action === 'cancel') {
                     console.log('User clicked cancel/close button')
