@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import useDrivePicker from 'react-google-drive-picker'
 
 const GooglePicker = () => {
@@ -7,8 +6,8 @@ const GooglePicker = () => {
     // const customViewsArray = [new google.picker.DocsView()]; // custom view
     const handleOpenPicker = () => {
         openPicker({
-            clientId: process.env.REACT_APP_GOOGLE_OAUTH_CLIENT,
-            developerKey: process.env.REACT_APP_GOOGLE_PICKER_API,
+            clientId: process.env.REACT_APP_GOOGLE_OAUTH_CLIENT || "",
+            developerKey: process.env.REACT_APP_GOOGLE_PICKER_API || "",
             viewId: "DOCS",
             // token: token, // pass oauth token in case you already have one
             showUploadView: true,

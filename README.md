@@ -1,5 +1,6 @@
+## About Google Picker Uploader
 This application can be used to upload images to google drive. 
-Unfortunately I was going to use it for uploading to blogger, but either it is not possible or I still have not find the way.
+Unfortunately I was going to use it for uploading to blogger directly (https://blogger.googleusercontent.com/), but either it is not possible or I still have not find the way.
 
 References:
 - [Google Picker API Guide](https://developers.google.com/drive/picker/guides/overview)
