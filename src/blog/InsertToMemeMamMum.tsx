@@ -1,48 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GetSpecificPost from "../post/GetSpecificPost"
 import InsertPost from "../post/InsertPost";
+import { useNavigate } from "react-router-dom";
+import getOauthToken from "../login/getOauthToken"
 
 const convertContentToData = (content: string): Record<string, any>[] => {
-    let regexp = /<img [A-z0-9 ="'-:]* \/>/g;
-    const imageTags = content.match(regexp);
+    let regexp = /<a [A-z0-9 ="'-:;]*><img [A-z0-9 ="'-:]* \/><\/a>/g;
+    const aTags = content.match(regexp);
 
     let extractedData = []
-    for (const tag of imageTags) {
+    for (const aTag of aTags) {
+        regexp = / href="([A-z0-9:\/.\-]*)"/
+        let temp = aTag.match(regexp)
+        if (temp.length != 2) continue;
+        let href = temp[1]
+
+        regexp = /<img [A-z0-9 ="'-:]* \/>/g;
+        temp = aTag.match(regexp);
+        if (temp.length != 1) continue;
+        let imageTag = temp[0]
+
         // console.log(tag)
         regexp = / data-original-width="([0-9]*)"/;
-        let temp = tag.match(regexp)
+        temp = imageTag.match(regexp)
         if (temp.length != 2) continue;
         let originalWidth = temp[1]
 
         regexp = / data-original-height="([0-9]*)"/
-        temp = tag.match(regexp)
+        temp = imageTag.match(regexp)
         if (temp.length != 2) continue;
         let originalHeight = temp[1]
 
         regexp = / width="([0-9]*)"/
-        temp = tag.match(regexp)
+        temp = imageTag.match(regexp)
         if (temp.length != 2) continue;
         let width = temp[1]
 
         regexp = / height="([0-9]*)"/
-        temp = tag.match(regexp)
+        temp = imageTag.match(regexp)
         if (temp.length != 2) continue;
         let height = temp[1]
-
-        regexp = / src="([A-z0-9:\/.\-]*)"/
-        temp = tag.match(regexp)
-        if (temp.length != 2) continue;
-        let src = temp[1]
 
         let result = {
             originalWidth: originalWidth,
             originalHeight: originalHeight,
             width: width,
             height: height,
-            src: src,
-            title: '',
-            caption: '',
-            labels: '',
+            ratio: parseInt(originalWidth) / parseInt(originalHeight),
+            href: href,
+            title: 'a',
+            caption: 'b',
+            labels: 'c',
         }
         extractedData.push(result)
     }
@@ -55,9 +63,8 @@ const calculateWidthAndHeight = (extractedData: Record<string, any>[]) => {
     for (const datum of extractedData) {
         let originalWidth = parseInt(datum.originalWidth)
         if (originalWidth > fixedWidth) {
-            let originalHeight = parseInt(datum.originalHeight)
-            datum.height = `${Math.round(fixedWidth / originalWidth * originalHeight)}`
-            datum.width = "540"
+            datum.height = `${Math.round(fixedWidth / datum.ratio)}`
+            datum.width = `${fixedWidth}`
         }
     }
 }
@@ -71,6 +78,15 @@ const InsertToMemeMamMum = () => {
     const [extractedData, setExtractedData] = useState([])
     const [phase, setPhase] = useState(insertPhase.getSpecificPost)
 
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        let oauthToken = getOauthToken()
+        if (!oauthToken) {
+            navigate("/login", { replace: true })
+        }
+    }, [])
+
     const onGetSpecificPostSuccess = (data: Record<string, any>) => {
         let extractedData = convertContentToData(data.content)
         calculateWidthAndHeight(extractedData)
@@ -78,9 +94,13 @@ const InsertToMemeMamMum = () => {
         setPhase(insertPhase.insertPost)
     }
 
+    const onInsertPostSuccess = () => {
+        setPhase(insertPhase.getSpecificPost)
+    }
+
     const goBack = () => {
         return (<div className="my-3">
-            <button onClick={() => setPhase(insertPhase.getSpecificPost)} className="btn btn-danger">Go Back</button>
+            <button type="button" onClick={() => setPhase(insertPhase.getSpecificPost)} className="btn btn-danger">Go Back</button>
         </div>)
     }
 
@@ -89,7 +109,7 @@ const InsertToMemeMamMum = () => {
     )
     else if (phase === insertPhase.insertPost) return (<>
         {goBack()}
-        <InsertPost dataProps={extractedData} />
+        <InsertPost dataProps={extractedData} onSuccess={onInsertPostSuccess} />
         {goBack()}
     </>)
 }
