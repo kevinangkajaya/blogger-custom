@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import GetSpecificPost from "../post/GetSpecificPost"
 import InsertPost from "../post/InsertPost";
-import { useNavigate } from "react-router-dom";
-import getOauthToken from "../login/getOauthToken"
+import Template from "../Template";
 
 const convertContentToData = (content: string): Record<string, any>[] => {
-    let regexp = /<a [A-z0-9 ="'-:;]*><img [A-z0-9 ="'-:]* \/><\/a>/g;
+    let regexp = /<a [A-z0-9 ="'-:;%]*><img [A-z0-9 ="'-:%]* \/><\/a>/g;
     const aTags = content.match(regexp);
 
     let extractedData = []
     for (const aTag of aTags) {
-        regexp = / href="([A-z0-9:\/.\-]*)"/
+        regexp = / href="([A-z0-9:\/.\-%()]*)"/
         let temp = aTag.match(regexp)
+        console.log(aTag, temp)
         if (temp.length != 2) continue;
         let href = temp[1]
 
-        regexp = /<img [A-z0-9 ="'-:]* \/>/g;
+        regexp = /<img [A-z0-9 ="'-:%]* \/>/g;
         temp = aTag.match(regexp);
         if (temp.length != 1) continue;
         let imageTag = temp[0]
@@ -48,9 +48,9 @@ const convertContentToData = (content: string): Record<string, any>[] => {
             height: height,
             ratio: parseInt(originalWidth) / parseInt(originalHeight),
             href: href,
-            title: 'a',
-            caption: 'b',
-            labels: 'c',
+            title: '',
+            caption: '',
+            labels: '',
         }
         extractedData.push(result)
     }
@@ -78,15 +78,6 @@ const InsertToMemeMamMum = () => {
     const [extractedData, setExtractedData] = useState([])
     const [phase, setPhase] = useState(insertPhase.getSpecificPost)
 
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        let oauthToken = getOauthToken()
-        if (!oauthToken) {
-            navigate("/login", { replace: true })
-        }
-    }, [])
-
     const onGetSpecificPostSuccess = (data: Record<string, any>) => {
         let extractedData = convertContentToData(data.content)
         calculateWidthAndHeight(extractedData)
@@ -104,14 +95,16 @@ const InsertToMemeMamMum = () => {
         </div>)
     }
 
-    if (phase === insertPhase.getSpecificPost) return (
-        <GetSpecificPost onSuccess={onGetSpecificPostSuccess} />
-    )
-    else if (phase === insertPhase.insertPost) return (<>
-        {goBack()}
-        <InsertPost dataProps={extractedData} onSuccess={onInsertPostSuccess} />
-        {goBack()}
-    </>)
+    return (<Template>
+        {phase === insertPhase.getSpecificPost ? <>
+            <GetSpecificPost onSuccess={onGetSpecificPostSuccess} />
+        </> : phase === insertPhase.insertPost ? <>
+            {goBack()}
+            <InsertPost dataProps={extractedData} onSuccess={onInsertPostSuccess} />
+            {goBack()}
+        </> : <></>
+        }
+    </Template>)
 }
 
 export default InsertToMemeMamMum

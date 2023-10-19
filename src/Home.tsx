@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import getOauthToken from "./login/getOauthToken"
+import { getOauthToken } from "./login/oauthToken"
 
 const Home = () => {
     const navigate = useNavigate()

@@ -2,6 +2,7 @@ import { createRef, useRef, useState } from "react"
 import update from "immutability-helper"
 import ErrorDiv from "@kevinangkajaya/error-div"
 import axios from "axios"
+import { getOauthToken } from "../login/oauthToken"
 
 interface InsertPostInterface {
     dataProps: Array<Record<string, any>>
@@ -138,7 +139,7 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
         }
 
         Promise.all(responses).then(() => {
-            // onSuccess()
+            onSuccess()
         }).catch((err) => {
             console.error(err)
         }).finally(() => {
@@ -150,7 +151,7 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
     const insertPost = async (datum: Record<any, string>) => {
         let urlParams = new URLSearchParams()
         urlParams.set("key", process.env.REACT_APP_BLOGGER_API)
-        urlParams.set("isDraft", "1")
+        urlParams.set("isDraft", "0")
 
         let blogID = process.env.REACT_APP_MEME_MAM_MUM_BLOG_ID
 
@@ -158,11 +159,15 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
 
         let dataPost = {
             title: datum.title,
-            content: `<p>&nbsp;</p><table align="center" cellpadding="0" cellspacing="0" class="tr-caption-container" style="margin-left: auto; margin-right: auto;"><tbody><tr><td style="text-align: center;"><a href="${datum.href}" style="margin-left: auto; margin-right: auto;"><img border="0" data-original-height="${datum.originalHeight}" data-original-width="${datum.originalWidth}" height="${datum.height}" src="${datum.href}" width="${datum.width}" /></a></td></tr><tr><td class="tr-caption" style="text-align: center;">${datum.caption}<br /><br /></td></tr></tbody></table>`,
+            content: `<p>&nbsp;</p><table align="center" cellpadding="0" cellspacing="0" class="tr-caption-container" style="margin-left: auto; margin-right: auto;"><tbody><tr><td style="text-align: center;"><a href="${datum.href}" style="margin-left: auto; margin-right: auto;"><img border="0" data-original-height="${datum.originalHeight}" data-original-width="${datum.originalWidth}" height="${datum.height}" src="${datum.href}" width="${datum.width}" /></a></td></tr><tr><td class="tr-caption" style="text-align: center;"><span style="font-size: medium;">${datum.caption}<br /></span><br /></td></tr></tbody></table>`,
             labels: datum.labels,
         }
 
-        return await axios.post(url, dataPost, {}).then(function (res) {
+        return await axios.post(url, dataPost, {
+            headers: {
+                Authorization: `Bearer ${getOauthToken()}`
+            }
+        }).then(function (res) {
             return true
         }).catch(function (err) {
             console.error(err)
