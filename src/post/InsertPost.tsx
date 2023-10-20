@@ -1,9 +1,10 @@
-import { createRef, useRef, useState } from "react"
+import { createRef, useRef, useState, useEffect } from "react"
 import update from "immutability-helper"
 import ErrorDiv from "@kevinangkajaya/error-div"
 import axios from "axios"
 import { getOauthToken } from "../login/oauthToken"
 import delay from "../helper/delay"
+import { saveLocalStorageHistory } from "./HistoryPost"
 
 interface InsertPostInterface {
     dataProps: Array<Record<string, any>>
@@ -24,6 +25,16 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
 
     const dataRef = useRef(createDataRef(dataProps))
     const fixedWidth = 540;
+
+    useEffect(() => {
+        let timeout = setTimeout(() => {
+            saveLocalStorageHistory(data)
+        }, 5000);
+
+        return () => {
+            clearTimeout(timeout)
+        }
+    }, [data])
 
     const onInputChange = (index: number, column: string, value: any) => {
         let temp = update(data, {
@@ -158,6 +169,7 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
                 }
                 currentIndex++;
             }
+            saveLocalStorageHistory(data)
             onSuccess()
         } catch (err) {
             console.error(err)

@@ -2,6 +2,7 @@ import { useState } from "react";
 import GetSpecificPost from "../post/GetSpecificPost"
 import InsertPost from "../post/InsertPost";
 import Template from "../Template";
+import HistoryPost from "../post/HistoryPost";
 
 const convertContentToData = (content: string): Record<string, any>[] => {
     let regexp = /<a [A-z0-9 ="'-:;%]*><img [A-z0-9 ="'-:%]* \/><\/a>/g;
@@ -85,6 +86,11 @@ const InsertToMemeMamMum = () => {
         setPhase(insertPhase.insertPost)
     }
 
+    const onHistoryPostGet = (historyData) => {
+        setExtractedData(historyData)
+        setPhase(insertPhase.insertPost)
+    }
+
     const onInsertPostSuccess = () => {
         setPhase(insertPhase.getSpecificPost)
     }
@@ -98,6 +104,7 @@ const InsertToMemeMamMum = () => {
     return (<Template>
         {phase === insertPhase.getSpecificPost ? <>
             <GetSpecificPost onSuccess={onGetSpecificPostSuccess} />
+            <HistoryPost onGet={onHistoryPostGet} />
         </> : phase === insertPhase.insertPost ? <>
             {goBack()}
             <InsertPost dataProps={extractedData} onSuccess={onInsertPostSuccess} />
