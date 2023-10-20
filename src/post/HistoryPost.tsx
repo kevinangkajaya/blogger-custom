@@ -5,7 +5,8 @@ const localStorageHistoryKey = 'history-post'
 export const saveLocalStorageHistory = (data: Record<string, any>[]) => {
     let stringifiedData = JSON.stringify(data)
     localStorage.setItem(localStorageHistoryKey, stringifiedData)
-    console.log(stringifiedData)
+    // console.log(stringifiedData)
+    console.log("history saved", new Date())
 }
 
 const getLocalStorageHistory = () => {
