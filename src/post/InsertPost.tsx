@@ -3,6 +3,7 @@ import update from "immutability-helper"
 import ErrorDiv from "@kevinangkajaya/error-div"
 import axios from "axios"
 import { getOauthToken } from "../login/oauthToken"
+import delay from "../helper/delay"
 
 interface InsertPostInterface {
     dataProps: Array<Record<string, any>>
@@ -24,7 +25,7 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
     const dataRef = useRef(createDataRef(dataProps))
     const fixedWidth = 540;
 
-    const onInputChange = (index: number, column: string, value: string) => {
+    const onInputChange = (index: number, column: string, value: any) => {
         let temp = update(data, {
             [index]: {
                 [column]: { $set: value }
@@ -90,6 +91,10 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
         }
     }
 
+    const getSelectedLength = () => {
+        return data.filter(x => x.selected === true).length
+    }
+
     const validate = () => {
         let validate = true
         const errors = []
@@ -98,25 +103,28 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
             let error: Record<string, string> = {}
             const datum = data[i]
 
-            if (!datum.title) {
-                validate = false
-                error.title = "Title is required"
-            }
-            if (!datum.caption) {
-                validate = false
-                error.caption = "Caption is required"
-            }
-            if (!datum.labels) {
-                validate = false
-                error.labels = "Labels is required"
-            }
-            if (!datum.width) {
-                validate = false
-                error.width = "Width is required"
-            }
-            if (!datum.height) {
-                validate = false
-                error.height = "Height is required"
+            if (datum.selected) {
+
+                if (!datum.title) {
+                    validate = false
+                    error.title = "Title is required"
+                }
+                if (!datum.caption) {
+                    validate = false
+                    error.caption = "Caption is required"
+                }
+                if (!datum.labels) {
+                    validate = false
+                    error.labels = "Labels is required"
+                }
+                if (!datum.width) {
+                    validate = false
+                    error.width = "Width is required"
+                }
+                if (!datum.height) {
+                    validate = false
+                    error.height = "Height is required"
+                }
             }
 
             errors.push(error)
@@ -126,25 +134,58 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
         set_errors(errors)
         return validate
     }
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault()
         if (!validate()) return
 
-        set_submitting(true)
         set_error_submit('')
-        const responses = []
-        for (const datum of data) {
-            let response = insertPost(datum)
-            responses.push(response)
+
+        if (getSelectedLength() === 0) {
+            set_error_submit("No items are selected!")
+            return
         }
 
-        Promise.all(responses).then(() => {
+        set_submitting(true)
+
+        let currentIndex = 0
+        let grouping = 0
+        try {
+            for (const datum of data) {
+                if (datum.selected) {
+                    await insertPost(datum)
+                    grouping++
+                    if (grouping % 5 === 0) await delay(60 * 1000) // 1 minute
+                }
+                currentIndex++;
+            }
             onSuccess()
-        }).catch((err) => {
+        } catch (err) {
             console.error(err)
-        }).finally(() => {
+            let error = ""
+            if (err.response?.data?.message) {
+                error = err.response.data.message
+            }
+            if (err.message) {
+                error = err.message
+            }
+            if (error) {
+                console.error(error)
+                set_error_submit(error)
+            }
+
+            // remove selected from used
+            let temp = data
+            for (let i = 0; i < currentIndex; i++) {
+                temp = update(temp, {
+                    [i]: {
+                        "selected": { $set: false }
+                    }
+                })
+            }
+            setData(temp)
+        } finally {
             set_submitting(false)
-        })
+        }
 
     }
 
@@ -170,18 +211,7 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
         }).then(function (res) {
             return true
         }).catch(function (err) {
-            console.error(err)
-            let error = ""
-            if (err.response?.data?.message) {
-                error = err.response.data.message
-            }
-            if (err.message) {
-                error = err.message
-            }
-            if (error) {
-                console.error(error)
-                set_error_submit(error)
-            }
+
             throw err
         })
     }
@@ -192,6 +222,14 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
                 <img width={datum.width} height={datum.height} src={datum.href} />
             </div>
             <div className="ms-3">
+                <div className="form-check">
+                    <input className="form-check-input" type="checkbox" id={"selected" + index}
+                        checked={datum.selected} onChange={(e) => onInputChange(index, "selected", !datum.selected)}
+                    />
+                    <label className="form-check-label" htmlFor={"selected" + index}>
+                        Selected
+                    </label>
+                </div>
                 <div className="form-group">
                     <label htmlFor="title">Title</label>
                     <input placeholder="Title" className="form-control" type="text" id="title" ref={dataRef.current[index].title}
@@ -241,7 +279,11 @@ const InsertPost = ({ dataProps, onSuccess }: InsertPostInterface) => {
                 </div>
             </div>
         </div>))}
-        {data.length > 0 && <div className="mt-3">
+        <div className="text-center">
+            Note: Please wait few minutes as we can only post 5 posts per minute
+            Selected item: {getSelectedLength()} / {data.length}
+        </div>
+        {data.length > 0 && <div className="mt-3 text-center">
             <ErrorDiv error={error_submit} />
             <button type="submit" className="btn btn-primary" disabled={submitting}>Submit</button>
         </div>}

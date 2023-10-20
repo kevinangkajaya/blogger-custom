@@ -9,7 +9,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   return (
-    <div className="App">
+    <div className="">
       <GoogleOAuthProvider clientId={process.env.REACT_APP_BLOGGER_OAUTH_CLIENT}>
         {/* <header className="App-header"> */}
         {/* </header> */}

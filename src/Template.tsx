@@ -25,7 +25,7 @@ const Template = ({ children }) => {
         navigate("/login")
     }
 
-    return (<div>
+    return (<div className="p-3">
         <div className="d-flex justify-content-end mb-3">
             <button type="button" className="btn btn-secondary" onClick={logout}>Logout</button>
         </div>

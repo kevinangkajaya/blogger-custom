@@ -11,7 +11,6 @@ const convertContentToData = (content: string): Record<string, any>[] => {
     for (const aTag of aTags) {
         regexp = / href="([A-z0-9:\/.\-%()]*)"/
         let temp = aTag.match(regexp)
-        console.log(aTag, temp)
         if (temp.length != 2) continue;
         let href = temp[1]
 
@@ -51,6 +50,7 @@ const convertContentToData = (content: string): Record<string, any>[] => {
             title: '',
             caption: '',
             labels: '',
+            selected: true,
         }
         extractedData.push(result)
     }
